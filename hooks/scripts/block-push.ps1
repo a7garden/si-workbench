@@ -7,9 +7,9 @@ $cmd = ''
 if ($e.tool_input -and $e.tool_input.command) { $cmd = [string]$e.tool_input.command }
 if ($cmd -eq '') { exit 0 }
 $deny = $false
-if ($cmd -match '(^|[\s;&|(>])git\s+(-[^ ]+\s+)*push\b') { $deny = $true }
-if ($cmd -match '(^|[\s;&|(>])svn\s+(-[^ ]+\s+)*(commit|ci)\b') { $deny = $true }
-if ($cmd -match 'git\s+svn\s+dcommit') { $deny = $true }
+if ($cmd -match '(^|[\s;&|(>])git(\s+[^ ;&|>]+)*\s+push\b') { $deny = $true }
+if ($cmd -match '(^|[\s;&|(>])svn(\s+[^ ;&|>]+)*\s+(commit|ci)\b') { $deny = $true }
+if ($cmd -match '(^|[\s;&|(>])git\s+svn\s+dcommit\b') { $deny = $true }
 if ($cmd -match '(^|[\s;&|(>])hg\s+push\b') { $deny = $true }
 if ($deny) {
   @{
