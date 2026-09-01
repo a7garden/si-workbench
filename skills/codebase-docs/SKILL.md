@@ -16,7 +16,7 @@ description: Use when the user wants to analyze a codebase and document it featu
 - 쓰기 대상은 vault(`${user_config.vault_path}`)뿐이다.
 - vault 경로 결정: `${user_config.vault_path}` → `%USERPROFILE%\.claude\si-workbench\config.json`의 `vaultPath` → 사용자에게 절대경로 문의. 순서대로 시도한다.
 - 위키 규범은 si-workbench:wiki를 준수한다: 개념 첫 등장 시 `[[개념명]]` 위키링크. 노트가 없으면 `템플릿/개념.md`로 먼저 생성한다(죽은 링크 금지).
-- 기능분석 문서에서 실제 파일 경로는 frontmatter `sources`에만 적는다. 본문은 추상 서술 + mermaid 다이어그램(경로 변경에 본문이 썩지 않는 구조).
+- 시각화 우선: 텍스트 나열보다 다이어그램이 명확한 곳은 반드시 다이어그램으로 쓴다. 기능분석 문서에서 실제 파일 경로는 frontmatter `sources`에만 적는다(경로 변경에 본문이 썩지 않는 구조).
 - frontmatter는 design.md 스키마의 키와 순서 그대로만. 임의 필드 생성 금지. 키는 영어, 값은 한국어.
 
 ## 입력
@@ -31,7 +31,7 @@ description: Use when the user wants to analyze a codebase and document it featu
 1. **사업 허브 확인**
    - `${user_config.vault_path}/사업/<사업명>/<사업명>.md`가 있는지 본다. 없으면 `/si-workbench:project-doc`으로 먼저 등록하라고 안내하고 중단한다.
    - 허브의 `codebase`, `vcs` 필드를 참조한다. `vcs`는 참고용이며 탐색 방식은 동일하다(경로만 본다).
-   - `${user_config.vault_path}/사업/<사업명>/분석/`과 `${user_config.vault_path}/첨부/스크린샷/<사업명>/`를 준비한다(이미 있으면 유지).
+   - `${user_config.vault_path}/사업/<사업명>/분석/`과 `${user_config.vault_path}/첨부/스크린샷/`, `${user_config.vault_path}/첨부/다이어그램/` 폴더를 준비한다(이미 있으면 유지).
 
 2. **코드베이스 읽기 전용 탐색**
    - 루트 매니페스트(`package.json`, `pom.xml`, `build.gradle`, `*.csproj`, `requirements.txt` 등)로 기술 스택과 엔트리포인트를 식별한다.
@@ -59,7 +59,8 @@ description: Use when the user wants to analyze a codebase and document it featu
 
    - `sources`에만 실제 파일 경로를 적고, 줄 끼 주석으로 그 파일의 역할을 붙인다. 본문에 파일 경로 나열 금지.
    - 본문은 추상 서술: `## 개요`(이 기능이 사용자에게 무엇을 해주는지), `## 동작 흐름`(처리 단계 설명).
-   - mermaid 다이어그램 최소 1개(`flowchart` 또는 `sequenceDiagram`)를 본문에 넣는다.
+   - 다이어그램 우선: 내용에 맞는 mermaid를 최소 1개 이상 넣는다 — 구조는 `flowchart`/`classDiagram`, 흐름은 `sequenceDiagram`, 상태 전이는 `stateDiagram`, 데이터는 `erDiagram`. 여러 개면 더 좋다.
+   - mermaid로 표현이 복잡한 레이아웃·와이어프레임·전체 아키텍처 그림은 SVG 파일로 직접 그려 `${user_config.vault_path}/첨부/다이어그램/<사업명>/`에 저장하고 `![[<파일명>.svg]]`로 임베드한다.
    - 본문에서 도메인 개념 첫 등장 시 `[[개념명]]` 링크. 노트가 없으면 `템플릿/개념.md`로 생성한다(정의 2-3문장, `sources`에 근거 코드 경로).
    - `related`에 관련 기능분석 문서를 서로 링크한다. `status`는 기본 `초안`.
 
@@ -84,7 +85,7 @@ description: Use when the user wants to analyze a codebase and document it featu
 | 원격 변경(`git push`, `svn commit` 등) | 실행할 이유가 없다. 훅이 확인을 요구하니 승인하지 말고 로컬 작업만 진행 |
 | 본문에 파일 경로 나열 | 경로는 frontmatter `sources` + 역할 주석만 |
 | 폴더 구조 미러한 기능 분해 | 사용자 관점 기능(capability) 단위로 분해 |
-| mermaid 없는 기능분석 문서 | 다이어그램 최소 1개 필수 |
+| 텍스트만 있는 기능분석 문서 | 다이어그램 필수 — mermaid 우선, 복잡한 그림은 SVG |
 | 스키마 밖 frontmatter 필드 추가 | design.md 스키마의 키·순서만 사용 |
 | 죽은 위키링크(`[[...]]` 대상 없음) | 링크 전에 `템플릿/개념.md`로 노트 생성 |
 | Playwright MCP 부재 시 작업 중단 | 텍스트만 진행하고 건너뛴 사실 보고 |

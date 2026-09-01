@@ -84,6 +84,7 @@ description: Use when the user wants to register a new business project in the v
    - frontmatter 없이(스키마에 없는 노트이므로) 마크다운 본문만: 사업 개요 / 사업 범위 / 주요 요구사항 요약.
    - 각 항목 아래에 출처를 표기한다: `> 출처: <문서파일명> "<챕터·헤딩명>"`. 원문이 vault 밖이면 링크 대신 이 텍스트 출처로 대체한다.
    - 본문에서 도메인 용어는 `[[개념명]]`으로 표기해 둔다(6단계에서 노트 생성).
+   - 시각화 우선: 시스템 구성·연동 관계는 mermaid `flowchart`로, 핵심 처리 흐름은 `sequenceDiagram`으로 제안 요약에 포함한다. mermaid로 표현이 복잡한 전체 아키텍처 그림은 SVG로 직접 그려 `${user_config.vault_path}/첨부/다이어그램/<사업명>/`에 저장하고 요약에서 임베드한다.
 
 6. **개념 노트 생성·링크**
    - 문서에서 핵심 도메인 개념을 3-8개 뽑는다(시스템명, 도메인 용어 위주).

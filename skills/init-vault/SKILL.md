@@ -27,7 +27,8 @@ si-workbench가 쓸 Obsidian vault의 폴더 구조를 만들고 노트 템플�
    - `${user_config.vault_path}/사업/`
    - `${user_config.vault_path}/개념/`
    - `${user_config.vault_path}/첨부/스크린샷/`
-   - 사업별 스크린샷 폴더(`첨부/스크린샷/<사업명>/`)는 project-doc, codebase-docs가 필요 시 만든다.
+   - `${user_config.vault_path}/첨부/다이어그램/`
+   - 사업별 스크린샷·다이어그램 폴더(`첨부/.../<사업명>/`)는 project-doc, codebase-docs가 필요 시 만든다.
 3. 템플릿 복사: `${CLAUDE_PLUGIN_ROOT}/templates/*.md` → `${user_config.vault_path}/템플릿/`
    - 대상 폴더에 같은 이름의 파일이 있으면 덮어쓰지 않고 skip 목록에 기록한다.
    - 복사한 파일과 스킵한 파일을 각각 목록으로 남긴다.
