@@ -18,12 +18,16 @@ $name = (Get-Date).ToString('yyyy-MM-dd') + '.jsonl'
 $path = Join-Path $dir $name
 for ($attempt = 0; $attempt -lt 5; $attempt++) {
   try {
-    $ErrorActionPreference = 'Stop'
     [System.IO.File]::AppendAllText($path, $line + [Environment]::NewLine, (New-Object System.Text.UTF8Encoding($false)))
     break
   } catch {
-    $ErrorActionPreference = 'SilentlyContinue'
-    Start-Sleep -Milliseconds (Get-Random -Minimum 10 -Maximum 60)
+    if ($attempt -eq 4) {
+      $errFile = Join-Path $env:TEMP 'si-workbench-journal.err'
+      $msg = '{0} journal write failed after 5 attempts: {1}' -f (Get-Date).ToString('o'), $_.Exception.Message
+      try { [System.IO.File]::AppendAllText($errFile, $msg + [Environment]::NewLine, (New-Object System.Text.UTF8Encoding($false))) } catch { }
+    } else {
+      Start-Sleep -Milliseconds (Get-Random -Minimum 10 -Maximum 60)
+    }
   }
 }
 exit 0

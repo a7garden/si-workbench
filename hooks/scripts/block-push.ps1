@@ -6,11 +6,11 @@ $e = $raw | ConvertFrom-Json
 $cmd = ''
 if ($e.tool_input -and $e.tool_input.command) { $cmd = [string]$e.tool_input.command }
 if ($cmd -eq '') { exit 0 }
-$needConfirm = $false
-if ($cmd -match '(^|[&|(>\s\\/])git(\.exe|\.cmd)?(\s+[^ ;&|>]+)*\s+(push|send-pack)(?![A-Za-z0-9_-])') { $needConfirm = $true }
-if ($cmd -match '(^|[&|(>\s\\/])svn(\.exe|\.cmd)?(\s+[^ ;&|>]+)*\s+(commit|ci|import)(?![A-Za-z0-9_-])') { $needConfirm = $true }
-if ($cmd -match '(^|[&|(>\s\\/])git(\.exe|\.cmd)?\s+svn\s+dcommit(?![A-Za-z0-9_-])') { $needConfirm = $true }
-if ($cmd -match '(^|[&|(>\s\\/])hg(\.exe|\.cmd)?\s+push(?![A-Za-z0-9_-])') { $needConfirm = $true }
+# token class [^ ;&|>]+ excludes ; & | > so each && / ; segment is anchored separately.
+if ($cmd -match '(^|[&|(>;\s\\/])git(\.exe|\.cmd)?(\s+[^ ;&|>]+)*\s+(push|send-pack)(?![A-Za-z0-9_-])') { $needConfirm = $true }
+if ($cmd -match '(^|[&|(>;\s\\/])svn(\.exe|\.cmd)?(\s+[^ ;&|>]+)*\s+(commit|ci|import)(?![A-Za-z0-9_-])') { $needConfirm = $true }
+if ($cmd -match '(^|[&|(>;\s\\/])git(\.exe|\.cmd)?(\s+[^ ;&|>]+)*\s+svn\s+dcommit(?![A-Za-z0-9_-])') { $needConfirm = $true }
+if ($cmd -match '(^|[&|(>;\s\\/])hg(\.exe|\.cmd)?(\s+[^ ;&|>]+)*\s+push(?![A-Za-z0-9_-])') { $needConfirm = $true }
 if ($needConfirm) {
   @{
     hookSpecificOutput = @{
