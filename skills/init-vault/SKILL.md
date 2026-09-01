@@ -13,7 +13,7 @@ si-workbench가 쓸 Obsidian vault의 폴더 구조를 만들고 노트 템플�
 - 코드베이스는 읽기 전용으로만 다룬다. 어떤 파일도 수정/삭제하지 않는다.
 - 원격 변경 금지: `git push`, `svn commit/ci`, `git svn dcommit`, `hg push`는 실행하지 않는다.
 - 이 스킬은 노트를 작성하지 않는다. 이후 모든 노트 작성은 si-workbench:wiki 규범을 준수한다.
-- vault는 로컬 전용이다. `git init`이나 클라우드 동기화 설정을 하지 않는다.
+- 클라우드 동기화·원격 저장소 설정은 하지 않는다. vault의 로컬 git 버저닝은 vault-tidy가 담당한다.
 
 ## 절차
 

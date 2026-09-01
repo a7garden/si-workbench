@@ -44,6 +44,7 @@ Claude Code를 열고:
 ```
 
 `setup`이 vault 경로와 실행 환경(Node·pandoc·훅·MCP)을 점검하고 설정합니다. 설정은 `%USERPROFILE%\.claude\si-workbench\config.json`에 저장되며(설치 시 입력한 `/plugin` 설정이 우선), 나중에 언제든 다시 실행해 진단할 수 있습니다.
+이미 작성해둔 문서가 있는 vault라면 init-vault 뒤에 `/si-workbench:vault-tidy`를 실행하세요. 기존 문서를 표준 구조로 옮기고, 제목만 있는 빈 노트·부실한 노트·파편화된 노트를 정리합니다 (재구성 전 원본을 git으로 박제해서 언제든 되돌릴 수 있습니다).
 
 vault에 다음 구조를 만들고 노트 템플릿 5종을 복사합니다 (기존 파일은 건드리지 않습니다):
 
@@ -69,6 +70,7 @@ Obsidian 설정에서 코어 플러그인 **Templates**를 활성화하고 템�
 | `/si-workbench:project-doc` | 제안서 + 코드베이스로 사업 문서 등록 |
 | `/si-workbench:codebase-docs` | 코드베이스 기능별 문서화 (mermaid + 스크린샷) |
 | `/si-workbench:wiki` | 개념 노트 생성/정리 (모든 스킬이 따르는 규범) |
+| `/si-workbench:vault-tidy` | 기존 문서 표준 구조 재구성·파편 병합·증분 정리 (로컬 git) |
 
 일지·보고는 `$ARGUMENTS`로 회의 등 구두 업무를 덧붙일 수 있습니다:
 `/si-workbench:daily-report 오후에 A사 요구사항 미티 1시간`

@@ -104,7 +104,7 @@ si-workbench/
 - ps1은 UTF-8 **with BOM**으로 저장 (Windows PowerShell 5.1 한글 파싱).
 - 훅 스크립트 경로는 `${CLAUDE_PLUGIN_ROOT}` 변수 사용.
 
-## 스킬 (7개, 네임스페이스 `/si-workbench:*`)
+## 스킬 (8개, 네임스페이스 `/si-workbench:*`)
 
 | 스킬 | 역할 |
 |---|---|
@@ -115,10 +115,10 @@ si-workbench/
 | `daily-report` | 보고 형식 요약 → 코드블록 출력 |
 | `project-doc` | 사업 등록: 제안서(docx: pandoc, 없으면 Word COM) + 코드베이스 경로 → 사업 폴더/허브/요약 |
 | `codebase-docs` | 코드베이스 → 기능별 기능분석 문서(mermaid 필수) + 필요시 Playwright 스크린샷 → 첨부/스크린샷 |
+| `vault-tidy` | 기존 볼트 재구성: 전체 스캔 → 표준 구조 이동·파편 병합·부실 보강·빈 노트 정리. 로컬 git 증분 (remote 금지) |
 
 공통: vault 경로는 `${user_config.vault_path}` 주입, 비었으면 `%USERPROFILE%\.claude\si-workbench\config.json`의 `vaultPath` 폴백(setup이 관리). docx 우선순위 pandoc → Word COM.
 
 ## 보안/정책
-
-- 플러그인 어디에도 원격 전송/push 로직 없음. vault는 로컬 파일 그대로(기본 git 초기화 안 함).
+- 원격 전송/push 로직 없음. vault의 git은 로컬 버저닝 전용 — vault-tidy가 초기화·커밋을 관리하고 remote는 금지.
 - 정부사업 특성상 세션 내용은 vault(로컬)에만 저장. 외부 동기화 가정 없음.
