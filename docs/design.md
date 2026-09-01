@@ -97,9 +97,9 @@ si-workbench/
 | 훅 | 스크립트 | 동작 |
 |---|---|---|
 | `SessionEnd` (전체) | journal-append.ps1 | 저널 JSONL 1줄 추가. 실패해도 조용히 exit 0 |
-| `PreToolUse` (`Bash\|PowerShell`) | block-push.ps1 | `git push`, `svn commit/ci`, `git svn dcommit`, `hg push` → deny |
+| `PreToolUse` (`Bash\|PowerShell`) | block-push.ps1 | `git push`, `svn commit/ci`, `git svn dcommit`, `hg push` → ask(실행 전 확인 프롬프트 강제) |
 
-- 원칙: 회사 저장소 원격 변경 절대 금지. 로컬 `git commit`은 허용.
+- 원칙: 회사 저장소 원격 변경은 완전 차단이 아니라 **항상 확인**. 사용자가 승인하면 실행됨. 로컬 `git commit`은 확인 없이 허용.
 - ps1은 UTF-8 **with BOM**으로 저장 (Windows PowerShell 5.1 한글 파싱).
 - 훅 스크립트 경로는 `${CLAUDE_PLUGIN_ROOT}` 변수 사용.
 

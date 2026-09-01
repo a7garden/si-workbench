@@ -80,7 +80,7 @@ description: Use when the user wants to analyze a codebase and document it featu
 | 금지 | 대안 |
 |---|---|
 | 코드베이스 파일 수정/삭제, 빌드·테스트 실행 | 읽기 전용 탐색만 |
-| 원격 변경(`git push`, `svn commit` 등) | 로컬 작업만. 훅이 차단하지만 본인도 실행하지 않는다 |
+| 원격 변경(`git push`, `svn commit` 등) | 실행할 이유가 없다. 훅이 확인을 요구하니 승인하지 말고 로컬 작업만 진행 |
 | 본문에 파일 경로 나열 | 경로는 frontmatter `sources` + 역할 주석만 |
 | 폴더 구조 미러한 기능 분해 | 사용자 관점 기능(capability) 단위로 분해 |
 | mermaid 없는 기능분석 문서 | 다이어그램 최소 1개 필수 |

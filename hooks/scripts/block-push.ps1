@@ -1,4 +1,4 @@
-﻿# si-workbench PreToolUse hook: deny remote-mutating VCS commands (company policy).
+﻿# si-workbench PreToolUse hook: force confirmation for remote-mutating VCS commands (company policy).
 $ErrorActionPreference = 'SilentlyContinue'
 $raw = [Console]::In.ReadToEnd()
 if (-not $raw) { exit 0 }
@@ -6,17 +6,17 @@ $e = $raw | ConvertFrom-Json
 $cmd = ''
 if ($e.tool_input -and $e.tool_input.command) { $cmd = [string]$e.tool_input.command }
 if ($cmd -eq '') { exit 0 }
-$deny = $false
-if ($cmd -match '(^|[\s;&|(>])git(\s+[^ ;&|>]+)*\s+push\b') { $deny = $true }
-if ($cmd -match '(^|[\s;&|(>])svn(\s+[^ ;&|>]+)*\s+(commit|ci)\b') { $deny = $true }
-if ($cmd -match '(^|[\s;&|(>])git\s+svn\s+dcommit\b') { $deny = $true }
-if ($cmd -match '(^|[\s;&|(>])hg\s+push\b') { $deny = $true }
-if ($deny) {
+$needConfirm = $false
+if ($cmd -match '(^|[\s;&|(>])git(\s+[^ ;&|>]+)*\s+push\b') { $needConfirm = $true }
+if ($cmd -match '(^|[\s;&|(>])svn(\s+[^ ;&|>]+)*\s+(commit|ci)\b') { $needConfirm = $true }
+if ($cmd -match '(^|[\s;&|(>])git\s+svn\s+dcommit\b') { $needConfirm = $true }
+if ($cmd -match '(^|[\s;&|(>])hg\s+push\b') { $needConfirm = $true }
+if ($needConfirm) {
   @{
     hookSpecificOutput = @{
       hookEventName          = 'PreToolUse'
-      permissionDecision     = 'deny'
-      permissionDecisionReason = 'si-workbench 회사 정책: 원격 저장소 변경(git push / svn commit)은 금지되어 있습니다. 로컬 작업만 진행하세요.'
+      permissionDecision     = 'ask'
+      permissionDecisionReason = 'si-workbench 회사 정책 확인: 원격 저장소 변경(git push / svn commit)입니다. 회사 규정상 허용되는 경우에만 실행을 승인하세요.'
     }
   } | ConvertTo-Json -Depth 5
 }

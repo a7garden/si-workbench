@@ -10,7 +10,7 @@ SI 업무를 위한 Claude Code 플러그인. Obsidian vault를 개인 지식베
 - **위키** — 문서에 나온 개념을 `[[개념]]` 링크로 연결하고, 없는 개념 노트는 규격 템플릿으로 생성합니다.
 - **사업 문서화** — 제안서(docx)와 코드베이스 경로를 주면 사업 허브 문서, 요약, 기능별 분석 문서(mermaid 다이어그램 포함)를 만듭니다.
 - **스크린샷 분석** — Playwright MCP로 웹 UI를 헤드리스 캡처해 분석 문서에 첨부합니다.
-- **안전장치** — `git push` / `svn commit` 등 원격 저장소 변경을 훅으로 차단합니다.
+- **안전장치** — `git push` / `svn commit` 등 원격 저장소 변경은 훅이 감지해 실행 전 항상 확인을 요청합니다.
 
 ## 요구사항
 
@@ -83,7 +83,7 @@ Obsidian 설정에서 코어 플러그인 **Templates**를 활성화하고 템�
 ## 훅
 
 - **SessionEnd** — 세션이 끝날 때마다 `%USERPROFILE%\.claude\si-workbench\journal\YYYY-MM-DD.jsonl`에 기록 한 줄을 추가합니다. 일지/보고 스킬이 이 저널을 읽습니다.
-- **PreToolUse** — `git push`, `svn commit`, `git svn dcommit`, `hg push`를 감지하면 차단합니다. 로컬 `git commit`은 허용됩니다.
+- **PreToolUse** — `git push`, `svn commit`, `git svn dcommit`, `hg push`를 감지하면 실행 전 확인 프롬프트를 항상 표시합니다. 승인하면 실행되고, 로컬 `git commit`은 확인 없이 실행됩니다.
 
 ## 자주 묻는 질문
 
@@ -91,7 +91,7 @@ Obsidian 설정에서 코어 플러그인 **Templates**를 활성화하고 템�
 
 **일지를 하루에 여러 번 돌리면?** `## 업무기록` 섹션이 통째로 갱신됩니다(멱등). 그 섹션은 자동 생성 전용으로 쓰고, 손 메모는 같은 노트의 `## 비고`에 하세요.
 
-**push가 막혀서 불편해요.** 회사 정책 반영입니다. 개인 저장소에 push하려면 해당 세션에서만 훅을 끄거나(`/hooks`) 다른 PC를 쓰세요.
+**push마다 확인창이 떠요.** 회사 정책 반영입니다 — 원격 저장소 변경은 항상 1회 확인됩니다. 개인 저장소에 자주 push한다면 `/hooks`에서 이 훅만 끄세요.
 
 ## 라이선스
 

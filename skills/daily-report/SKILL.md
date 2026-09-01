@@ -10,7 +10,7 @@ description: Use when the user asks for a daily work report to send — "업무 
 ## 공통 원칙
 
 - 코드베이스는 읽기 전용으로만 다룬다. 어떤 저장소의 파일도 수정/삭제하지 않는다.
-- 원격 저장소 변경 금지: `git push`, `svn commit`/`svn ci`, `git svn dcommit`, `hg push`를 실행하지 않는다. 로컬 `git commit`만 허용이며, 훅(block-push.ps1)이 원격 변경을 기술적으로 차단한다.
+- 원격 저장소 변경 주의: `git push`, `svn commit`/`svn ci`, `git svn dcommit`, `hg push`는 불필요하면 실행하지 않는다. 로컬 `git commit`은 자유이며, 훅(block-push.ps1)이 원격 변경은 실행 전 사용자 확인을 요구한다.
 - 위키 규범은 si-workbench:wiki를 준수한다. 이 스킬은 vault에 아무것도 쓰지 않으며, 출력물은 메신저·메일 등 위키 밖으로 복사하는 용도이므로 `[[위키링크]]` 표기를 쓰지 않고 일반 문구로 쓴다.
 
 ## 분석 절차 (daily-log와 공통)

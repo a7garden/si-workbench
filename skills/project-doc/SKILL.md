@@ -10,7 +10,7 @@ description: Use when the user wants to register a new business project in the v
 
 ## 안전 규칙 (최우선)
 
-- 원격 변경 금지: `git push`, `svn commit/ci`, `git svn dcommit`, `hg push`를 절대 실행하지 않는다. 훅이 기술적으로 차단하지만 스킬 자체도 시도하지 않는다.
+- 원격 변경 주의: `git push`, `svn commit/ci`, `git svn dcommit`, `hg push`는 불필요하면 실행하지 않는다. 훅이 실행 전 사용자 확인을 요구하며, 스킬 자체도 승인받은 목적 없이는 시도하지 않는다.
 - 코드베이스 경로가 주어지면 읽기 전용으로만 다룬다. 어떤 파일도 수정/삭제하지 않는다.
 - 쓰기 대상은 vault(`${user_config.vault_path}`)뿐이다.
 - 위키 규범은 si-workbench:wiki를 준수한다: 개념 첫 등장 시 `[[개념명]]` 위키링크. 노트가 없으면 `템플릿/개념.md`로 먼저 생성한다(죽은 링크 금지).
@@ -98,7 +98,7 @@ description: Use when the user wants to register a new business project in the v
 
 | 금지 | 대안 |
 |---|---|
-| 원격 변경(`git push`, `svn commit` 등) | 로컬 작업만. 훅이 차단하지만 본인도 실행하지 않는다 |
+| 원격 변경(`git push`, `svn commit` 등) | 승인받은 목적이 없으면 실행하지 않는다. 훅이 확인을 요구한다 |
 | 코드베이스 파일 수정/삭제 | 읽기 전용 탐색만 |
 | 스키마 밖 frontmatter 필드 추가 | design.md 스키마의 키·순서만 사용 |
 | 죽은 위키링크(`[[...]]` 대상 없음) | 링크 전에 `템플릿/개념.md`로 노트 생성 |
