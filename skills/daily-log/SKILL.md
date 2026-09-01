@@ -13,6 +13,7 @@ description: Use when the user asks to write or update today's work journal from
 - 원격 저장소 변경 주의: `git push`, `svn commit`/`svn ci`, `git svn dcommit`, `hg push`는 불필요하면 실행하지 않는다. 로컬 `git commit`은 자유이며, 훅(block-push.ps1)이 원격 변경은 실행 전 사용자 확인을 요구한다.
 - 위키 규범은 si-workbench:wiki를 준수한다. 일지 본문에서 개념이 처음 등장하면 `[[개념명]]`으로 링크하고, 개념 노트가 없으면 템플릿(`템플릿/개념.md`) 내용으로 생성한다. 죽은 링크 금지.
 - 프로퍼티 키는 영어, 값은 한국어. 스키마는 design.md 표 그대로이며 스킬이 임의 필드를 만들지 않는다.
+- vault 경로 결정: `${user_config.vault_path}` → `%USERPROFILE%\.claude\si-workbench\config.json`의 `vaultPath` → 사용자에게 절대경로 문의. 순서대로 시도한다.
 
 ## 분석 절차 (daily-report와 공통)
 

@@ -14,6 +14,7 @@ description: Use when the user wants to analyze a codebase and document it featu
 - 빌드·테스트·포맷터·코드 생성 등 파일 쓰기를 유발하는 명령도 코드베이스에서 실행하지 않는다.
 - 원격 변경 금지: `git push`, `svn commit/ci`, `git svn dcommit`, `hg push`를 절대 실행하지 않는다.
 - 쓰기 대상은 vault(`${user_config.vault_path}`)뿐이다.
+- vault 경로 결정: `${user_config.vault_path}` → `%USERPROFILE%\.claude\si-workbench\config.json`의 `vaultPath` → 사용자에게 절대경로 문의. 순서대로 시도한다.
 - 위키 규범은 si-workbench:wiki를 준수한다: 개념 첫 등장 시 `[[개념명]]` 위키링크. 노트가 없으면 `템플릿/개념.md`로 먼저 생성한다(죽은 링크 금지).
 - 기능분석 문서에서 실제 파일 경로는 frontmatter `sources`에만 적는다. 본문은 추상 서술 + mermaid 다이어그램(경로 변경에 본문이 썩지 않는 구조).
 - frontmatter는 design.md 스키마의 키와 순서 그대로만. 임의 필드 생성 금지. 키는 영어, 값은 한국어.

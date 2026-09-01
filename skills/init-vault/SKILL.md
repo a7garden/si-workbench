@@ -19,7 +19,8 @@ si-workbench가 쓸 Obsidian vault의 폴더 구조를 만들고 노트 템플�
 
 1. vault 경로 확인
    - `${user_config.vault_path}` 값을 읽는다.
-   - 값이 비어있거나 해당 경로가 디스크에 실존하지 않으면, 임의로 추정하지 말고 사용자에게 vault 절대경로를 문의한다. 답을 받으면 그 경로로 진행한다.
+   - 값이 비어있거나 실존하지 않으면 `%USERPROFILE%\.claude\si-workbench\config.json`의 `vaultPath`를 확인한다. 있으면 그 경로를 쓴다.
+   - 둘 다 없으면 임의로 추정하지 말고 사용자에게 vault 절대경로를 문의한다. 답을 받으면 그 경로로 진행하고, 사용자 동의를 얻어 config.json에 저장한다(다음 실행부터 자동 적용). 이하 절차의 `${user_config.vault_path}`는 여기서 확정한 경로로 읽는다.
 2. 폴더 생성 (이미 있으면 건너뛰고 목록에 기록)
    - `${user_config.vault_path}/템플릿/`
    - `${user_config.vault_path}/일지/`

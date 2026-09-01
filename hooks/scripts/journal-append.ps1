@@ -15,5 +15,15 @@ $rec = [ordered]@{
 }
 $line = $rec | ConvertTo-Json -Compress
 $name = (Get-Date).ToString('yyyy-MM-dd') + '.jsonl'
-Add-Content -Path (Join-Path $dir $name) -Value $line -Encoding utf8
+$path = Join-Path $dir $name
+for ($attempt = 0; $attempt -lt 5; $attempt++) {
+  try {
+    $ErrorActionPreference = 'Stop'
+    [System.IO.File]::AppendAllText($path, $line + [Environment]::NewLine, (New-Object System.Text.UTF8Encoding($false)))
+    break
+  } catch {
+    $ErrorActionPreference = 'SilentlyContinue'
+    Start-Sleep -Milliseconds (Get-Random -Minimum 10 -Maximum 60)
+  }
+}
 exit 0

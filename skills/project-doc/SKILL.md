@@ -13,6 +13,7 @@ description: Use when the user wants to register a new business project in the v
 - 원격 변경 주의: `git push`, `svn commit/ci`, `git svn dcommit`, `hg push`는 불필요하면 실행하지 않는다. 훅이 실행 전 사용자 확인을 요구하며, 스킬 자체도 승인받은 목적 없이는 시도하지 않는다.
 - 코드베이스 경로가 주어지면 읽기 전용으로만 다룬다. 어떤 파일도 수정/삭제하지 않는다.
 - 쓰기 대상은 vault(`${user_config.vault_path}`)뿐이다.
+- vault 경로 결정: `${user_config.vault_path}` → `%USERPROFILE%\.claude\si-workbench\config.json`의 `vaultPath` → 사용자에게 절대경로 문의. 순서대로 시도한다.
 - 위키 규범은 si-workbench:wiki를 준수한다: 개념 첫 등장 시 `[[개념명]]` 위키링크. 노트가 없으면 `템플릿/개념.md`로 먼저 생성한다(죽은 링크 금지).
 - frontmatter는 design.md 스키마의 키와 순서 그대로만 사용한다. 임의 필드 생성 금지. 키는 영어, 값은 한국어.
 - vault 밖 원문 문서를 통째로 복사하지 않는다. 요약 + 출처 표기만 남긴다.

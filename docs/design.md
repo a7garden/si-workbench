@@ -77,6 +77,7 @@ si-workbench/
 - transcript 샘플링: user 발화 + summary 항목 중심. JSONL 통독 금지.
 - 같은 session_id가 여러 줄이면 마지막 것만 유효.
 - `$ARGUMENTS`로 구두 업무(회의 등) 추가 입력 가능.
+- vault 경로 결정: `${user_config.vault_path}` → `%USERPROFILE%\.claude\si-workbench\config.json`의 `vaultPath` → 사용자 문의. `/si-workbench:setup`이 이 설정을 관리한다.
 
 ## 보고 형식 (daily-report 표준 출력)
 
@@ -97,16 +98,17 @@ si-workbench/
 | 훅 | 스크립트 | 동작 |
 |---|---|---|
 | `SessionEnd` (전체) | journal-append.ps1 | 저널 JSONL 1줄 추가. 실패해도 조용히 exit 0 |
-| `PreToolUse` (`Bash\|PowerShell`) | block-push.ps1 | `git push`, `svn commit/ci`, `git svn dcommit`, `hg push` → ask(실행 전 확인 프롬프트 강제) |
+| `PreToolUse` (`Bash\|PowerShell`) | block-push.ps1 | `git push`/`send-pack`, `svn commit/ci/import`, `git svn dcommit`, `hg push` → ask(실행 전 확인 프롬프트 강제) |
 
 - 원칙: 회사 저장소 원격 변경은 완전 차단이 아니라 **항상 확인**. 사용자가 승인하면 실행됨. 로컬 `git commit`은 확인 없이 허용.
 - ps1은 UTF-8 **with BOM**으로 저장 (Windows PowerShell 5.1 한글 파싱).
 - 훅 스크립트 경로는 `${CLAUDE_PLUGIN_ROOT}` 변수 사용.
 
-## 스킬 (6개, 네임스페이스 `/si-workbench:*`)
+## 스킬 (7개, 네임스페이스 `/si-workbench:*`)
 
 | 스킬 | 역할 |
 |---|---|
+| `setup` | 설정·환경 진단: vault 경로 수집(config.json), Node/pandoc/MCP/훅 점검. 재실행 안전 |
 | `wiki` | 개념 노트 규범 본문. 다른 모든 스킬이 이 규범을 준수함을 명시 |
 | `init-vault` | vault 스캐폴딩 + 템플릿 복사 + .obsidian/templates.json 설정. 재실행 안전(기존 파일 보존) |
 | `daily-log` | 상세 업무기록 → 일지 노트 `## 업무기록` 교체 |
@@ -114,7 +116,7 @@ si-workbench/
 | `project-doc` | 사업 등록: 제안서(docx: pandoc, 없으면 Word COM) + 코드베이스 경로 → 사업 폴더/허브/요약 |
 | `codebase-docs` | 코드베이스 → 기능별 기능분석 문서(mermaid 필수) + 필요시 Playwright 스크린샷 → 첨부/스크린샷 |
 
-공통: vault 경로는 `${user_config.vault_path}`로 주입. docx 우선순위 pandoc → Word COM.
+공통: vault 경로는 `${user_config.vault_path}` 주입, 비었으면 `%USERPROFILE%\.claude\si-workbench\config.json`의 `vaultPath` 폴백(setup이 관리). docx 우선순위 pandoc → Word COM.
 
 ## 보안/정책
 

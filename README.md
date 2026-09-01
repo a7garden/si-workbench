@@ -39,8 +39,11 @@ Claude Code를 열고:
 ## 첫 실행
 
 ```
+/si-workbench:setup
 /si-workbench:init-vault
 ```
+
+`setup`이 vault 경로와 실행 환경(Node·pandoc·훅·MCP)을 점검하고 설정합니다. 설정은 `%USERPROFILE%\.claude\si-workbench\config.json`에 저장되며(설치 시 입력한 `/plugin` 설정이 우선), 나중에 언제든 다시 실행해 진단할 수 있습니다.
 
 vault에 다음 구조를 만들고 노트 템플릿 5종을 복사합니다 (기존 파일은 건드리지 않습니다):
 
@@ -59,6 +62,7 @@ Obsidian 설정에서 코어 플러그인 **Templates**를 활성화하고 템�
 
 | 명령 | 하는 일 |
 |---|---|
+| `/si-workbench:setup` | 설정·환경 진단 (vault 경로, Node/pandoc, 훅, MCP) |
 | `/si-workbench:init-vault` | vault 초기 구조 + 템플릿 세팅 (재실행 안전) |
 | `/si-workbench:daily-log` | 오늘 세션 분석 → 일지 노트 `## 업무기록` 섹션 갱신 |
 | `/si-workbench:daily-report` | 업무 보고 형식 코드블록 생성 (복붙용) |
@@ -83,11 +87,11 @@ Obsidian 설정에서 코어 플러그인 **Templates**를 활성화하고 템�
 ## 훅
 
 - **SessionEnd** — 세션이 끝날 때마다 `%USERPROFILE%\.claude\si-workbench\journal\YYYY-MM-DD.jsonl`에 기록 한 줄을 추가합니다. 일지/보고 스킬이 이 저널을 읽습니다.
-- **PreToolUse** — `git push`, `svn commit`, `git svn dcommit`, `hg push`를 감지하면 실행 전 확인 프롬프트를 항상 표시합니다. 승인하면 실행되고, 로컬 `git commit`은 확인 없이 실행됩니다.
+- **PreToolUse** — `git push`, `git send-pack`, `svn commit/ci/import`, `git svn dcommit`, `hg push`를 감지하면 실행 전 확인 프롬프트를 항상 표시합니다. 승인하면 실행되고, 로컬 `git commit`은 확인 없이 실행됩니다.
 
 ## 자주 묻는 질문
 
-**Playwright MCP 로드 에러가 나요.** Node.js가 없을 때 나는 메시지로, 나머지 기능에는 영향이 없습니다. 스크린샷이 필요하면 Node.js 18+를 설치하세요.
+**Playwright MCP 로드 에러가 나요.** Node.js가 없을 때 나는 메시지로, 나머지 기능에는 영향이 없습니다. 스크린샷이 필요하면 Node.js 18+를 설치하세요. Node가 있는데도 Windows 네이티브에서 로드가 실패하면, 설치된 플러그인의 `.mcp.json`에서 playwright 항목을 `"command": "cmd", "args": ["/c", "npx", "@playwright/mcp@latest"]`로 바꾸면 해결되는 경우가 있습니다.
 
 **일지를 하루에 여러 번 돌리면?** `## 업무기록` 섹션이 통째로 갱신됩니다(멱등). 그 섹션은 자동 생성 전용으로 쓰고, 손 메모는 같은 노트의 `## 비고`에 하세요.
 
