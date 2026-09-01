@@ -1,0 +1,11 @@
+{
+  "name": "si-workbench",
+  "owner": { "name": "won", "url": "https://github.com/a7garden" },
+  "plugins": [
+    {
+      "name": "si-workbench",
+      "source": "./",
+      "description": "SI 업무 지식베이스 플러그인: 업무일지·보고·위키·코드분석 (Obsidian vault 기반)"
+    }
+  ]
+}

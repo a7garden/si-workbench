@@ -1,0 +1,240 @@
+# si-workbench Implementation Plan
+
+> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+
+**Goal:** Windows 업무용 PC의 Claude Code에 설치할 Obsidian 기반 SI 업무 지식베이스 플러그인(일지·보고·위키·문서화·push 차단)을 만들어 GitHub 공개 저장소로 배포.
+
+**Architecture:** 단일 플러그인 = 마켓플레이스 저장소. 스킬 6개(규범/스캐폴딩/일지 2종/문서화 2종) + 훅 2종(SessionEnd 저널 적립, PreToolUse push 차단) + Playwright MCP. vault 경로는 `userConfig.vault_path`로 설치 시 프롬프트.
+
+**Tech Stack:** Claude Code Plugin (skills/hooks/.mcp.json), PowerShell 5.1 훅 스크립트, Obsidian markdown (YAML frontmatter, wikilinks), Playwright MCP, pandoc/Word COM 폴백.
+
+**Spec:** `docs/design.md`
+
+## Global Constraints
+
+- 플러그인/마켓플레이스/repo 이름: `si-workbench`. GitHub: `a7garden/si-workbench`. 스킬 호출은 `/si-workbench:<skill>`.
+- 프로퍼티 키는 영어, 값은 한국어. 필드는 `docs/design.md` 스키마만 허용.
+- vault 경로 표기: 스킬 본문에서 `${user_config.vault_path}`. 저널 위치: `%USERPROFILE%\.claude\si-workbench\journal\YYYY-MM-DD.jsonl`.
+- 원격 변경 금지: 스킬 본문에도 "push/svn commit 금지" 명시. 훅이 기술적 차단.
+- vault 문서 내용은 한국어. 코드/식별자는 영어.
+- ps1은 UTF-8 with BOM. 훅 경로는 `${CLAUDE_PLUGIN_ROOT}`.
+- 일지 섹션 계약: 노트 내 `## 업무기록` 헤딩 아래부터 다음 `## ` 헤딩 또는 EOF까지가 교체 범위. 노트 없으면 템플릿 내용으로 생성 후 섹션 채움. 헤딩 없으면 문서 끝에 `## 업무기록` 추가.
+- 보고 출력 계약: fenced 코드블록 하나. 그 밖의 텍스트(날짜/인사/제목) 금지. `[분류]` + `- 항목`, 카테고리 사이 빈 줄.
+
+---
+
+### Task 1: Foundation — 매니페스트/MCP/훅 (inline)
+
+**Files:**
+- Create: `.claude-plugin/plugin.json`, `.claude-plugin/marketplace.json`, `.mcp.json`, `hooks/hooks.json`, `hooks/scripts/journal-append.ps1`, `hooks/scripts/block-push.ps1`, `LICENSE`, `.gitignore`
+
+- [ ] 아래 내용 그대로 생성 (ps1은 작성 후 BOM 추가: `printf '\xEF\xBB\xBF' | cat - f.ps1 > f.tmp && mv`)
+
+`plugin.json`:
+```json
+{
+  "name": "si-workbench",
+  "description": "SI 업무 지식베이스 플러그인: Obsidian vault 기반 업무일지, 업무 보고, 위키(개념 노트), 제안서/코드베이스 분석 문서화, push 차단 안전장치",
+  "version": "0.1.0",
+  "author": { "name": "won" },
+  "homepage": "https://github.com/a7garden/si-workbench",
+  "repository": "https://github.com/a7garden/si-workbench",
+  "license": "MIT",
+  "keywords": ["obsidian", "wiki", "daily-log", "si", "korean"],
+  "userConfig": {
+    "vault_path": {
+      "type": "string",
+      "title": "Obsidian vault 절대 경로",
+      "description": "업무 지식베이스로 쓸 Obsidian vault의 절대 경로 (예: C:\\Users\\me\\Documents\\WorkVault)"
+    }
+  }
+}
+```
+
+`marketplace.json`:
+```json
+{
+  "name": "si-workbench",
+  "owner": { "name": "won", "url": "https://github.com/a7garden" },
+  "plugins": [
+    {
+      "name": "si-workbench",
+      "source": "./",
+      "description": "SI 업무 지식베이스 플러그인: 업무일지·보고·위키·코드분석 (Obsidian vault 기반)"
+    }
+  ]
+}
+```
+
+`.mcp.json`:
+```json
+{
+  "mcpServers": {
+    "playwright": {
+      "command": "npx",
+      "args": ["@playwright/mcp@latest"]
+    }
+  }
+}
+```
+
+`hooks/hooks.json`:
+```json
+{
+  "hooks": {
+    "SessionEnd": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "powershell.exe",
+            "args": ["-NoProfile", "-ExecutionPolicy", "Bypass", "-File", "${CLAUDE_PLUGIN_ROOT}/hooks/scripts/journal-append.ps1"],
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Bash|PowerShell",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "powershell.exe",
+            "args": ["-NoProfile", "-ExecutionPolicy", "Bypass", "-File", "${CLAUDE_PLUGIN_ROOT}/hooks/scripts/block-push.ps1"],
+            "timeout": 10
+          }
+        ]
+      }
+    ]
+  }
+}
+```
+
+`journal-append.ps1`:
+```powershell
+# si-workbench SessionEnd hook: append one JSONL line to the daily work journal.
+$ErrorActionPreference = 'SilentlyContinue'
+$raw = [Console]::In.ReadToEnd()
+if (-not $raw) { exit 0 }
+$e = $raw | ConvertFrom-Json
+if (-not $e.session_id) { exit 0 }
+$dir = Join-Path $env:USERPROFILE '.claude\si-workbench\journal'
+New-Item -ItemType Directory -Force -Path $dir | Out-Null
+$rec = [ordered]@{
+  ts              = (Get-Date).ToString('o')
+  session_id      = $e.session_id
+  cwd             = $e.cwd
+  transcript_path = $e.transcript_path
+  reason          = $e.reason
+}
+$line = $rec | ConvertTo-Json -Compress
+$name = (Get-Date).ToString('yyyy-MM-dd') + '.jsonl'
+Add-Content -Path (Join-Path $dir $name) -Value $line -Encoding utf8
+exit 0
+```
+
+`block-push.ps1`:
+```powershell
+# si-workbench PreToolUse hook: deny remote-mutating VCS commands (company policy).
+$ErrorActionPreference = 'SilentlyContinue'
+$raw = [Console]::In.ReadToEnd()
+if (-not $raw) { exit 0 }
+$e = $raw | ConvertFrom-Json
+$cmd = ''
+if ($e.tool_input -and $e.tool_input.command) { $cmd = [string]$e.tool_input.command }
+if ($cmd -eq '') { exit 0 }
+$deny = $false
+if ($cmd -match '(^|[\s;&|(>])git\s+(-[^ ]+\s+)*push\b') { $deny = $true }
+if ($cmd -match '(^|[\s;&|(>])svn\s+(-[^ ]+\s+)*(commit|ci)\b') { $deny = $true }
+if ($cmd -match 'git\s+svn\s+dcommit') { $deny = $true }
+if ($cmd -match '(^|[\s;&|(>])hg\s+push\b') { $deny = $true }
+if ($deny) {
+  @{
+    hookSpecificOutput = @{
+      hookEventName          = 'PreToolUse'
+      permissionDecision     = 'deny'
+      permissionDecisionReason = 'si-workbench 회사 정책: 원격 저장소 변경(git push / svn commit)은 금지되어 있습니다. 로컬 작업만 진행하세요.'
+    }
+  } | ConvertTo-Json -Depth 5
+}
+exit 0
+```
+
+`.gitignore`: `.DS_Store`, `node_modules/`
+`LICENSE`: MIT (Copyright (c) 2026 a7garden)
+
+- [ ] pwsh 가용 시 문법 체크 + stdin 더미로 기능 확인; `claude plugin validate` (claude CLI 가용 시)
+- [ ] `git add -A && git commit -m "feat: plugin foundation (manifest, hooks, mcp)"`
+
+### Task 2: Templates 5종 (subagent)
+
+**Files:** `templates/사업.md`, `templates/개념.md`, `templates/일지.md`, `templates/기능분석.md`, `templates/회의.md`
+
+**Interfaces (frontmatter 스키마 — design.md 그대로, 순서 고정):**
+- 사업: `type`, `status`, `client`, `period`, `parent`, `related`, `codebase`, `vcs`, `tags`
+- 개념: `type`, `aliases`, `related`, `sources`, `tags`
+- 일지: `type`, `tags`
+- 기능분석: `type`, `sources`, `related`, `status`, `tags`
+- 회의: `type`, `date: "{{date:YYYY-MM-DD}}"`, `participants`, `project`, `related`, `tags`
+
+- [ ] 각 템플릿: frontmatter(Obsidian core Templates `{{title}}`/`{{date}}` 구문 사용) + H1 `# {{title}}` + 안내 주석(HTML comment)으로 각 필드 설명 + 섹션 스캐폴드. 일지는 `## 업무기록`(+ 자동생성 안내 주석)과 `## 비고` 섹션 포함. 개념은 `## 정의`, `## 관련`. 기능분석은 hero mermaid 코드펜스 자리 + `## 개요`, `## 동작 흐름`, `## 관련 문서`. 사업은 `## 개요`, `## 문서`, `## 주요 개념`, `## 산출물`.
+- [ ] 검증: frontmatter가 design.md 스키마와 키·순서 일치. 값은 전부 한국어 예시/빈 값.
+
+### Task 3: Skills — wiki + init-vault (subagent A)
+
+**Files:** `skills/wiki/SKILL.md`, `skills/init-vault/SKILL.md`
+
+**Interfaces:**
+- wiki는 규범의 단일 진실원천. 다른 스킬 본문은 "si-workbench:wiki 규범 준수"로 참조.
+- init-vault는 `${CLAUDE_PLUGIN_ROOT}/templates/*` → `<vault>/템플릿/` 복사, 폴더 스캐폴딩(일지/사업/개념/첨부/스크린샷), `.obsidian/templates.json`에 `{"folder":"템플릿"}` 없으면 작성.
+
+- [ ] SKILL.md 작성 규칙: frontmatter `description`은 "Use when..." 트리거만(워크플로우 요약 금지) — 예: "오늘 세션 기록을 정리할 때, 업무일지를 쓸 때 사용". 본문은 절차형 체크리스트 + 금지사항 표.
+- [ ] wiki 규범 5조(design.md) 전문 포함 + 개념 노트 생성 절차(존재 확인→템플릿 복제→정의/sources 기재→링크) + 금지(임의 필드, 죽은 링크, 본문 중복).
+- [ ] init-vault: 재실행 안전(기존 파일 덮어쓰기 금지, skip 보고) + vault_path 비어있으면 사용자에게 물어 paths 절차.
+
+### Task 4: Skills — daily-log + daily-report (subagent B)
+
+**Files:** `skills/daily-log/SKILL.md`, `skills/daily-report/SKILL.md`
+
+**Interfaces:**
+- 저널: `%USERPROFILE%\.claude\si-workbench\journal\<오늘>.jsonl`, 라인 스키마 `{ts, session_id, cwd, transcript_path, reason}`. 같은 session_id 여러 줄 → 마지막 유효.
+- transcript JSONL 샘플링 규칙(두 스킬 공통, 본문에 동일 문구): 먼저 라인 수 파악 → `"type":"summary"` 항목과 user 발화(`message.role == "user"`, 문자열 또는 content[].type=="text") 추출 → 마지막 assistant 메시지 1-2개. 전체 통독 금지, tool_result 본문 읽지 않기.
+- 일지 노트: `${user_config.vault_path}/일지/YYYY-MM-DD.md`. 섹션 계약은 Global Constraints 참조.
+- `$ARGUMENTS`가 있으면 분석 결과에 추가 업무로 반영.
+
+- [ ] daily-log: 절차(저널→dedup→샘플링→작업 항목 재구성→노트 upsert→교체 요약 보고). 기록 형식: 시간순 프로젝트/작업 블록, 각 항목에 무엇/왜/결과. 한국어.
+- [ ] daily-report: 동일 분석 후 design.md 보고 형식 그대로 단일 코드블록 출력. 출력 전 자체 체크리스트(형식 4항목) 명시. `$ARGUMENTS` 반영.
+- [ ] 두 스킬 모두: 세션이 없는 날의 동작(빈 결과 보고 + $ARGUMENTS만으로 작성) 정의. 회사 원격 변경 금지 문구.
+
+### Task 5: Skills — project-doc + codebase-docs (subagent C)
+
+**Files:** `skills/project-doc/SKILL.md`, `skills/codebase-docs/SKILL.md`
+
+**Interfaces:**
+- project-doc 입력: `$ARGUMENTS` = 사업명 [문서 경로들...] [코드베이스 경로]. 산출: `사업/<사업명>/<사업명>.md`(허브, frontmatter 사업 스키마), `산출물/제안요약.md`, 개념 노트들(wiki 규범).
+- docx: `pandoc -f docx -t gfm_embed` 시도 → 실패 시 PowerShell Word COM(`Documents.Open` → 텍스트 추출) 폴백. 둘 다 안 되면 사용자에게 안내.
+- codebase-docs: 코드베이스는 **읽기 전용** 탐색(git/svn 구분 없이 경로만). 기능 트리 도출 → `분석/`에 기능당 문서 1개(frontmatter sources에만 실제 경로, 본문 추상 서술 + mermaid 필수) → 허브 MOC 갱신.
+- 스크린샷: UI 프로젝트이고 Playwright MCP 도구가 살아있으면 `첨부/스크린샷/<사업명>/`에 캡처 후 임베드. MCP 부재 시 텍스트만 진행(중단 금지).
+
+- [ ] project-doc: 제안서에서 발주처/사업기간/요구사항 키워드 추출해 허브 frontmatter 채우는 절차. 추출 실패 시 빈 값 + 사용자 확인 질문.
+- [ ] codebase-docs: 기능 분해 기준(cluedoc: capability 단위, 폴더 구조 미러 금지), 문서 수 상한(1차 패스 5-10개), MOC 갱신, wiki 링크 규범 준수 문구.
+- [ ] 두 스킬 모두 "코드베이스 어떤 파일도 수정/삭제 금지, 원격 변경 금지" 명시.
+
+### Task 6: README + 최종 점검 (inline)
+
+**Files:** `README.md`
+
+- [ ] 한국어 README: 소개, 전제조건(Windows/Claude Code/선택: Node·pandoc), 설치 2줄(`/plugin marketplace add a7garden/si-workbench` → `/plugin install si-workbench@si-workbench`), 설치 후 vault 경로 프롬프트 안내, `/si-workbench:init-vault` 첫 실행, 명령 표(6 스킬), 훅 설명(저널·push 차단), vault 구조 예시, 문제해결(MCP 실패 시 무해, 훅 로그), 라이선스.
+- [ ] `claude plugin validate` 재실행, 전체 파일 목록 대조(계약 누락 없나), 커밋.
+
+### Task 7: 검증 (inline + tester subagents)
+
+- [ ] pwsh 기능 테스트: journal-append.ps1에 더미 stdin → 저널 파일 생성 확인; block-push.ps1에 `git push`/`svn ci`/`npm test` stdin → deny/무시 확인.
+- [ ] fixture 시나리오 (subagent 테스터 2개): 가짜 저널+transcript+vault 픽스처를 만들고 daily-log/daily-report SKILL.md만 주어 산출물 검증(섹션 교체 멱등, 코드블록 형식).
+- [ ] 실패 시 스킬 수정 후 재검증 (writing-skills RED-GREEN).
+
+### Task 8: Publish (inline)
+
+- [ ] `gh repo create a7garden/si-workbench --public --source . --push`
+- [ ] raw README fetch로 공개 확인, 사용자에게 설치 링크/명령 전달.
