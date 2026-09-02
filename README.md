@@ -105,7 +105,7 @@ Obsidian 설정에서 코어 플러그인 **Templates**를 활성화하고 템�
 
 ## 자주 묻는 질문
 
-**Playwright MCP 로드 에러가 나요.** Node.js가 없을 때 나는 메시지로, 나머지 기능에는 영향이 없습니다. 스크린샷이 필요하면 Node.js 18+를 설치하세요. Node가 있는데도 Windows 네이티브에서 로드가 실패하면, 설치된 플러그인의 `.mcp.json`에서 playwright 항목을 `"command": "cmd", "args": ["/c", "npx", "@playwright/mcp@latest"]`로 바꾸면 해결되는 경우가 있습니다.
+**Playwright MCP 로드 에러가 나요.** Node.js가 없을 때 나는 메시지로, 나머지 기능에는 영향이 없습니다. 스크린샷이 필요하면 Node.js 18+를 설치하세요. Node가 있는데도 Windows 네이티브에서 로드가 실패하면, 설치된 플러그인의 `.mcp.json`에서 playwright 항목을 `"command": "cmd", "args": ["/c", "npx", "--yes", "@playwright/mcp@0.0.80"]`로 바꾸면 해결되는 경우가 있습니다.
 
 **일지를 하루에 여러 번 돌리면?** `## 업무기록` 섹션만 통째로 갱신됩니다(멱등). 아침에는 `## 오늘 할 일`, 퇴근 전에는 `## 내일 할 일`에 체크박스로 적고, 기타 손 메모는 `## 비고`에 하세요 — 이 섹션들은 자동 갱신 대상이 아닙니다.
 
