@@ -16,7 +16,7 @@ SI 업무용 Claude Code 플러그인. Obsidian vault를 개인 지식베이스(
 si-workbench/
   .claude-plugin/plugin.json        # name, version, userConfig(vault_path)
   .claude-plugin/marketplace.json   # 단일 플러그인, source: "./"
-  skills/                           # 6개 스킬 (아래)
+  skills/                           # 11개 스킬 (아래)
   hooks/hooks.json                  # SessionEnd, PreToolUse
   hooks/scripts/journal-append.ps1
   hooks/scripts/block-push.ps1
@@ -73,6 +73,7 @@ si-workbench/
 /si-workbench:daily-log  → 오늘 저널 → transcript 샘플링 → 상세 업무기록
   → 일지/오늘.md 의 `## 업무기록` 섹션 전체 교체 (재실행 멱등, 노트 없으면 생성)
 /si-workbench:daily-report → 동일 분석 → 보고 형식 코드블록 1개 출력
+/si-workbench:evening → 오늘 할 일 체크 확정(증거 기반) → daily-log 절차 → daily-report → 내일 할 일 이월
 ```
 
 - transcript 샘플링: user 발화 + summary 항목 중심. JSONL 통독 금지.
@@ -105,7 +106,19 @@ si-workbench/
 - ps1은 UTF-8 **with BOM**으로 저장 (Windows PowerShell 5.1 한글 파싱).
 - 훅 스크립트 경로는 `${CLAUDE_PLUGIN_ROOT}` 변수 사용.
 
-## 스킬 (8개, 네임스페이스 `/si-workbench:*`)
+## 스킬 (11개, 네임스페이스 `/si-workbench:*`)
+
+### 일과 루틴 (무인 실행)
+
+루틴 스킬은 [UNATTENDED] 계약을 따른다: 실행 중 사용자에게 질문하지 않고, 모든 판단과 근거를 마지막 보고에 남긴다. 사용자가 실행을 걸어둔 채 자리를 비우는 사용 패턴을 전제로 한다.
+
+| 스킬 | 역할 |
+|---|---|
+| `morning` | 오늘 일지 노트 확보 + 어제 `내일 할 일` 이월(오늘 할 일이 초기 상태일 때만 자동, 아니면 표시만) + 어제 요약 브리핑 |
+| `lunch` | 완전 읽기 전용 오전 결산: 오늘 할 일 vs 오전 저널 대조 → 완료/진행중/미착수 + 오후 제안 |
+| `evening` | 체크 확정(저널 증거 기반, 근거 없으면 유지) → daily-log 절차로 `## 업무기록` 교체 → daily-report 형식 출력 → 미체크 항목 `## 내일 할 일` 병합 |
+
+### 도구
 
 | 스킬 | 역할 |
 |---|---|
