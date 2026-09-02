@@ -30,6 +30,7 @@ description: Use when the user wants to register a new business project in the v
 
 1. **인자 파싱**
    - 사업명이 없으면 사용자에게 문의하고 중단한다.
+   - 사업명은 vault 폴더명이 된다. Windows 금지 문자(`\` `/` `:` `*` `?` `"` `<` `>` `|`)는 제거하거나 `-`로 치환한 폴더명을 쓰고, 결과 폴더명을 결과 보고에 남긴다.
    - 경로 인자를 구분한다: 존재하는 파일(문서) vs 존재하는 디렉터리(코드베이스). 존재하지 않는 경로는 사용자에게 확인한다.
    - 문서가 하나도 없으면 docx 파싱 단계를 건너뛰고, 발주처/기간 등을 사용자 문답으로 채운다.
 
@@ -49,12 +50,14 @@ description: Use when the user wants to register a new business project in the v
      ```powershell
      $word = New-Object -ComObject Word.Application
      $word.Visible = $false
-     $doc = $word.Documents.Open("<문서 절대경로>", $false, $true)  # ReadOnly=true
-     $doc.Content.Text | Out-File -Encoding utf8 "<시스템 임시 디렉터리>\추출-<파일명>.txt"
-     $doc.Close($false)
-     $word.Quit()
+     try {
+       $doc = $word.Documents.Open("<문서 절대경로>", $false, $true)  # ReadOnly=true
+       $doc.Content.Text | Out-File -Encoding utf8 "<시스템 임시 디렉터리>\추출-<파일명>.txt"
+       $doc.Close($false)
+     } finally {
+       $word.Quit()
+     }
      ```
-
    - 둘 다 불가하면 중단하지 말고 사용자에게 pandoc 설치(권장)를 안내하고, 해당 문서의 텍스트를 붙여넣어 달라고 요청한 뒤 받은 텍스트로 계속한다.
    - `.md`/`.txt` 문서는 그대로 읽는다. 그 외 읽을 수 없는 형식(pdf 등)은 위와 동일하게 텍스트 붙여넣기를 요청한다.
    - 추출 파일은 요약 완료 후 임시 디렉터리에서 정리한다.

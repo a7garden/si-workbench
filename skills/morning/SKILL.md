@@ -22,7 +22,7 @@ description: Use when the user starts the workday — "출근", "아침", "morni
 ## 절차
 
 1. **오늘 일지 노트 확보** — `${vault}/일지/YYYY-MM-DD.md`(로컬 날짜). 노트가 없으면 템플릿(`템플릿/일지.md`) 내용으로 생성한다. `{{date}}`는 오늘 날짜로 치환한다.
-2. **어제 노트 찾기** — `일지/` 폴더에서 파일명 날짜가 오늘 이전인 것 중 가장 최신 파일. 없으면 3-4단계를 건너뛰고 보고에 "이전 일지 없음"을 적는다.
+2. **어제 노트 찾기** — `일지/` 폴더에서 파일명이 `YYYY-MM-DD.md` 패턴이면서 날짜가 오늘 이전인 것 중 가장 최신 파일. 패턴이 아닌 파일명은 대상에서 제외한다. 없으면 3-4단계를 건너뛰고 보고에 "이전 일지 없음"을 적는다.
 3. **어제 요약** — 어제 노트의 `## 업무기록`을 3줄 이내로 요약한다. 업무기록이 비어 있으면 어제 날짜 저널(`%USERPROFILE%\.claude\si-workbench\journal\<어제>.jsonl`)로 대체한다: session_id dedup(같은 id는 마지막 라인만 유효) 후 각 transcript에 [SAMPLING] 규칙을 적용해 요약한다. 둘 다 없으면 "어제 기록 없음".
 
 [SAMPLING] transcript JSONL 샘플링 규칙: (1) 전체 통독 금지. (2) 먼저 라인 수 파악. (3) `"type":"summary"` 라인과 user 발화(`message.role == "user"`이고 content가 문자열이거나 content[].type=="text")를 추출. (4) 마지막 assistant 텍스트 1-2개만 추가. (5) tool_result 본문은 읽지 않는다. 파일이 크면 앞부분 user 발화와 뒷부분 마무리를 우선.
@@ -45,3 +45,4 @@ description: Use when the user starts the workday — "출근", "아침", "morni
 - `## 업무기록`, `## 비고`, `## 내일 할 일` 섹션은 건드리지 않는다.
 - 오늘 할 일이 초기 상태가 아닌데 덮어쓰거나 항목을 추가하지 않는다.
 - 저널 파일과 어제 노트는 읽기 전용이다.
+- 브리핑 출력에 `[[위키링크]]` 표기를 쓰지 않는다. 어제 업무기록의 링크는 일반 문구로 풀어쓴다.

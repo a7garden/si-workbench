@@ -25,6 +25,7 @@ description: Use when the user wants to analyze a codebase and document it featu
 
 - 코드베이스 경로가 없으면 사업 허브 frontmatter의 `codebase` 필드를 사용한다.
 - 둘 다 없으면 사용자에게 문의하고 중단한다.
+- 사업명·기능명은 vault 폴더/파일명이 된다. Windows 금지 문자(`\` `/` `:` `*` `?` `"` `<` `>` `|`)는 제거하거나 `-`로 치환한다.
 
 ## 절차
 
@@ -43,6 +44,7 @@ description: Use when the user wants to analyze a codebase and document it featu
    - 도출한 트리에서 1차 패스로 문서화할 5-10개 기능을 고른다(핵심·자주 쓰이는 것 우선). 나머지는 후속 패스 후보로 보고한다.
 
 4. **기능 문서 작성 (1차 패스)** — 기능마다 `분석/<기능명>.md`
+   - 기존 문서가 있으면 새로 쓰지 않는다. 사용자가 Obsidian에서 다듬었을 수 있으므로 덮어쓰지 않고, 비어 있는 frontmatter 필드와 누락된 다이어그램·개념 링크만 보완하고 보완 내역을 결과 보고에 남긴다.
    - `${user_config.vault_path}/템플릿/기능분석.md` 내용으로 노트를 만들고 frontmatter를 채운다(스키마 순서 고정):
 
      ```yaml

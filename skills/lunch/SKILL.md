@@ -21,7 +21,7 @@ description: Use when the user wants a midday status check — "점심", "오전
 
 1. **오늘 노트 로드** — `${vault}/일지/YYYY-MM-DD.md`(로컬 날짜). 노트가 없으면 생성하지 말고 "오늘 노트가 없습니다 — `/si-workbench:morning`을 먼저 실행하세요"를 보고하고 종료한다.
 2. **할 일 상태 파싱** — `## 오늘 할 일`의 체크박스 항목을 [x]/[ ]로 나눈다. 항목이 없으면 "오늘 할 일 비어 있음"으로 진행한다.
-3. **오전 작업 수집** — 오늘 저널(`%USERPROFILE%\.claude\si-workbench\journal\<오늘>.jsonl`)에서 session_id dedup 후 유효 라인의 transcript마다 [SAMPLING] 규칙을 적용한다. 저널이 없거나 유효 세션이 없으면 "오전 세션 기록 없음"으로 진행한다.
+3. **오전 작업 수집** — 오늘 저널(`%USERPROFILE%\.claude\si-workbench\journal\<오늘>.jsonl`)에서 session_id dedup 후 유효 라인의 transcript마다 [SAMPLING] 규칙을 적용한다. 이때 실행 시점까지 끝난 세션(ts가 현재 시각 이전)만 대상으로 삼는다. 저널이 없거나 유효 세션이 없으면 "오전 세션 기록 없음"으로 진행한다.
 
 [SAMPLING] transcript JSONL 샘플링 규칙: (1) 전체 통독 금지. (2) 먼저 라인 수 파악. (3) `"type":"summary"` 라인과 user 발화(`message.role == "user"`이고 content가 문자열이거나 content[].type=="text")를 추출. (4) 마지막 assistant 텍스트 1-2개만 추가. (5) tool_result 본문은 읽지 않는다. 파일이 크면 앞부분 user 발화와 뒷부분 마무리를 우선.
 
@@ -46,4 +46,5 @@ description: Use when the user wants a midday status check — "점심", "오전
 ## 금지
 
 - 어떤 파일도 수정/생성하지 않는다.
-- 오후 제안을 질문으로 바꾸지 않는다. 제안 한 줄로 끝낸다.
+- 오후 제안을 질문으로 바꾸지 않는다. 제안 한 줄로 끝난다.
+- 결산 출력에 `[[위키링크]]` 표기를 쓰지 않는다. 항목은 일반 문구로 풀어쓴다.
